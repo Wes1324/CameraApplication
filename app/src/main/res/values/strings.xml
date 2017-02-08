@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Camera Application</string>
+    <string name="add_new_card">Add new card</string>
+    <string name="content_attribute">Photo returned by camera</string>
+</resources>
