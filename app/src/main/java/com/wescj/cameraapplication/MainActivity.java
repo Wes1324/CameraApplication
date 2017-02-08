@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -40,9 +41,16 @@ public class MainActivity extends AppCompatActivity {
         } catch(IOException e) {
             e.printStackTrace();
         }
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile)); //Tells camera where to save picture taken
 
-        startActivityForResult(takePictureIntent, TAKE_PICTURE_REQUEST_CODE);
+
+        if (photoFile != null) {
+            Uri photoURI = FileProvider.getUriForFile(this, "com.example.android.fileprovider", photoFile);
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+            startActivityForResult(takePictureIntent, TAKE_PICTURE_REQUEST_CODE);
+        }
+
+        //takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile)); //Tells camera where to save picture taken
+        //startActivityForResult(takePictureIntent, TAKE_PICTURE_REQUEST_CODE);
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -60,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "IMAGE_" + timestamp + "_";
 
-        File storageDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File storageDirectory = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File imageFile = File.createTempFile(imageFileName, ".jpg", storageDirectory);
 
         mImageFileLocation = imageFile.getAbsolutePath();
