@@ -56,11 +56,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == TAKE_PICTURE_REQUEST_CODE && resultCode == RESULT_OK){
             //Toast.makeText(this, "picture taken", Toast.LENGTH_SHORT).show();
+
             //Bundle extras = data.getExtras();
             //Bitmap photoCapturedBitmap = (Bitmap) extras.get("data");
             //capturedImage.setImageBitmap(photoCapturedBitmap);
-            Bitmap photoCapturedBitmap = BitmapFactory.decodeFile(mImageFileLocation); //Goes to where camera saved picture and decodes it
-            capturedImage.setImageBitmap(photoCapturedBitmap);
+
+            //Bitmap photoCapturedBitmap = BitmapFactory.decodeFile(mImageFileLocation); //Goes to where camera saved picture and decodes it
+            //capturedImage.setImageBitmap(photoCapturedBitmap);
+
+            getReducedImageSize();
         }
     }
 
@@ -74,5 +78,39 @@ public class MainActivity extends AppCompatActivity {
         mImageFileLocation = imageFile.getAbsolutePath();
 
         return imageFile;
+    }
+
+    public void getReducedImageSize() {
+        int imageViewHeight = capturedImage.getHeight();
+        int imageViewWidth = capturedImage.getWidth();
+
+        BitmapFactory.Options bitmapFactoryOptions = new BitmapFactory.Options();
+        bitmapFactoryOptions.inJustDecodeBounds = true;                             //Set options so that decoder of BitmapFactory just does
+                                                                                    // a 'dummy read' of the image taken with camera to read the sizes of that image.
+                                                                                    // i.e. decoder queries the bitmap without having to allocate memory for its pixels
+        BitmapFactory.decodeFile(mImageFileLocation, bitmapFactoryOptions);         //Decode the image with that inJustDecodeBounds option set
+        int actualCameraImageWidth = bitmapFactoryOptions.outWidth;                 //Read the image sizes from the inner class
+        int actualCameraImageHeight = bitmapFactoryOptions.outHeight;
+
+        int heightScale = actualCameraImageHeight/imageViewHeight;
+        int widthScale = actualCameraImageWidth/imageViewWidth;
+
+        Integer factorToUse;
+
+        if(heightScale == widthScale) {
+            Toast.makeText(this, "scales are the same: " + heightScale, Toast.LENGTH_SHORT).show();
+            factorToUse = heightScale;
+        } else {
+            factorToUse = Math.min(heightScale, widthScale);
+            Toast.makeText(this, "scales are DIFFERENT: " + factorToUse, Toast.LENGTH_SHORT).show();
+        }
+
+        bitmapFactoryOptions.inSampleSize = factorToUse;        //Tell the inner class how large we want the image to be
+        bitmapFactoryOptions.inJustDecodeBounds = false;        //Don't want to do a dummy read this time, actually want to read the pixels in
+                                                                // so we can then show them in the imageView
+
+        Bitmap reducedSizePhoto = BitmapFactory.decodeFile(mImageFileLocation, bitmapFactoryOptions);   //decode the image with that scale option set
+
+        capturedImage.setImageBitmap(reducedSizePhoto);
     }
 }
